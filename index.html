@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIDDLE EAST MONITOR</title>
+<meta name="description" content="Free live Middle East conflict monitor — real-time map, news feed, prediction markets, live chat and market ticker."/>
+<meta property="og:title" content="Middle East Monitor — Live Conflict Tracker"/>
+<meta property="og:description" content="Real-time conflict map, live news, predictions and chat."/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- WALKTHROUGH -->
+<div id="wtOverlay" class="wt-overlay" style="display:none">
+  <div class="wt-backdrop"></div>
+  <div class="wt-spotlight" id="wtSpotlight"></div>
+  <div class="wt-box" id="wtBox">
+    <div class="wt-step" id="wtStep"></div>
+    <div class="wt-icon" id="wtIcon"></div>
+    <div class="wt-title" id="wtTitle"></div>
+    <div class="wt-desc" id="wtDesc"></div>
+    <div class="wt-btns">
+      <button class="wt-skip" id="wtSkip">Skip</button>
+      <button class="wt-next" id="wtNext">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar" id="topbar">
+  <div class="brand">
+    <div class="live-dot"></div>
+    <span class="brand-text">MEM</span>
+    <span class="brand-sub">MIDDLE EAST MONITOR</span>
+  </div>
+  <div class="top-stats">
+    <div class="stat"><span class="sn" id="airstrike-count">--</span><span class="sl">STRIKES</span></div>
+    <div class="stat danger"><span class="sn" id="casualty-count">--</span><span class="sl">CAS/30D</span></div>
+    <div class="stat warn"><span class="sn" id="conflict-count">--</span><span class="sl">ZONES</span></div>
+    <div class="stat teal"><span class="sn" id="viewer-count">--</span><span class="sl">WATCHING</span></div>
+  </div>
+  <div class="top-right">
+    <button class="icon-btn" id="helpBtn" title="Take Tour">?</button>
+    <span class="live-badge">● LIVE</span>
+    <span class="clock" id="clock">--:--:--</span>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap" id="tickerWrap">
+  <span class="ticker-label">MARKETS</span>
+  <div class="ticker-overflow"><div class="ticker-track" id="tickerTrack"></div></div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainGrid">
+
+  <!-- LEFT FEEDS -->
+  <div class="panel left-panel" id="leftPanel">
+    <div class="panel-tabs">
+      <button class="ptab active" data-tab="news">📰 NEWS</button>
+      <button class="ptab" data-tab="conflict">💥 CONFLICT</button>
+      <button class="ptab" data-tab="predict">📊 PREDICT</button>
+      <button class="ptab" data-tab="tweets">🐦 TWEETS</button>
+    </div>
+    <div class="tab-pane active" id="tab-news">
+      <div class="feed" id="newsFeed"><div class="loader"><div class="spin"></div>Loading...</div></div>
+    </div>
+    <div class="tab-pane" id="tab-conflict">
+      <div class="feed" id="conflictFeed"></div>
+    </div>
+    <div class="tab-pane" id="tab-predict">
+      <div class="feed" id="predictionFeed"></div>
+    </div>
+    <div class="tab-pane" id="tab-tweets">
+      <div class="feed" id="tweetFeed"></div>
+    </div>
+  </div>
+
+  <!-- CENTER: MAP on top, VIDEO on bottom -->
+  <div class="center-col" id="centerCol">
+
+    <!-- MAP (top) -->
+    <div class="map-wrap" id="mapWrap">
+      <div id="map"></div>
+      <div class="map-legend">
+        <div class="leg"><span class="ld red"></span>Strike</div>
+        <div class="leg"><span class="ld orange"></span>Ground</div>
+        <div class="leg"><span class="ld yellow"></span>News</div>
+        <div class="leg"><span class="ld zone"></span>Zone</div>
+      </div>
+    </div>
+
+    <!-- VIDEO (bottom) -->
+    <div class="video-section" id="videoBar">
+      <div class="vswitcher">
+        <button class="vsw active" data-channel="aj">📺 Al Jazeera</button>
+        <button class="vsw" data-channel="bbc">📺 BBC</button>
+        <button class="vsw" data-channel="custom">🔗 Custom</button>
+      </div>
+      <div class="vlinks" id="vlinks">
+        <div class="vlinks-label">▶ OPEN LIVE STREAM IN NEW TAB</div>
+        <div class="vlinks-row">
+          <a class="vlink-btn aj" href="https://www.aljazeera.com/live" target="_blank">Al Jazeera Live</a>
+          <a class="vlink-btn bbc" href="https://www.bbc.co.uk/news/av/live/p02nm25c" target="_blank">BBC News Live</a>
+        </div>
+        <div class="vlinks-note">YouTube embeds are blocked by news channels. Use custom URL for your own stream.</div>
+      </div>
+      <div class="custom-row" id="customRow" style="display:none">
+        <input class="curl-input" id="customStreamUrl" placeholder="Paste your YouTube/Twitch embed URL..."/>
+        <button class="curl-btn" id="loadCustomStream">LOAD</button>
+      </div>
+      <div class="vframe-wrap" id="vframeWrap" style="display:none">
+        <iframe id="videoFrame" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT CHAT -->
+  <div class="panel right-panel" id="rightPanel">
+
+    <div class="viewer-bar">
+      <div class="vl"><div class="vdot"></div><span id="viewerDisplay">-- watching</span></div>
+      <span class="vpeak">PEAK <span id="peakViewers">0</span></span>
+    </div>
+
+    <div class="chat-hdr" id="chatHdr">
+      <span class="ctitle">💬 LIVE CHAT</span>
+      <div class="chat-hdr-btns">
+        <button class="hbtn" id="openGifBtn">GIF</button>
+        <button class="hbtn" id="openStickerBtn">🎭</button>
+      </div>
+    </div>
+
+    <div class="react-bar" id="reactBar">
+      <button class="rbtn" data-key="fire">🔥<span class="rc" id="rc-fire">0</span></button>
+      <button class="rbtn" data-key="skull">💀<span class="rc" id="rc-skull">0</span></button>
+      <button class="rbtn" data-key="bolt">⚡<span class="rc" id="rc-bolt">0</span></button>
+      <button class="rbtn" data-key="alert">🚨<span class="rc" id="rc-alert">0</span></button>
+      <button class="rbtn" data-key="shock">😱<span class="rc" id="rc-shock">0</span></button>
+    </div>
+
+    <div class="messages" id="chatMessages"></div>
+
+    <!-- GIF PANEL -->
+    <div class="overlay" id="gifPanel" style="display:none">
+      <div class="ov-hdr"><span>🎬 GIF SEARCH</span><button class="xbtn" id="closeGif">✕</button></div>
+      <div class="key-row">
+        <input class="kinput" id="giphyKey" placeholder="Giphy key (giphy.com/developers)"/>
+        <input class="kinput" id="tenorKey" placeholder="Tenor key (tenor.com/developer)"/>
+      </div>
+      <div class="gsrow">
+        <input class="gsearch" id="gifSearchInput" placeholder="Search GIFs..."/>
+        <button class="gbtn" id="gifSearchBtn">GO</button>
+      </div>
+      <div class="gor">— or paste URL —</div>
+      <div class="gurow">
+        <input class="ginput" id="gifUrlInput" placeholder="https://...gif"/>
+        <button class="gbtn2" id="gifUrlSend">SEND</button>
+      </div>
+      <div class="gresults" id="gifResults"></div>
+    </div>
+
+    <!-- STICKER PANEL -->
+    <div class="overlay" id="stickerPanel" style="display:none">
+      <div class="ov-hdr"><span>🎭 STICKERS</span><button class="xbtn" id="closeSticker">✕</button></div>
+      <div class="stab-row">
+        <button class="stab active" data-stab="preset">PRESET</button>
+        <button class="stab" data-stab="custom">+ CUSTOM</button>
+      </div>
+      <div class="stab-pane active" id="stab-preset">
+        <div class="sgrid" id="presetStickers"></div>
+      </div>
+      <div class="stab-pane" id="stab-custom">
+        <div class="cform">
+          <input class="ginput" id="customUrl" placeholder="Image or GIF URL..."/>
+          <input class="ginput" id="customLabel" placeholder="Label..."/>
+          <button class="gbtn2" id="addCustomBtn">ADD</button>
+        </div>
+        <div class="sgrid" id="customStickers"><div class="nocustom">No custom stickers yet.</div></div>
+      </div>
+    </div>
+
+    <div class="cinput-row">
+      <input class="cinput" id="chatInput" placeholder="Message..." maxlength="200"/>
+      <button class="csend" id="chatSend">↵</button>
+    </div>
+    <div class="name-row">
+      <span class="nlabel">AS:</span>
+      <input class="ninput" id="nameInput" placeholder="Anonymous" maxlength="20"/>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <div class="si"><div class="sdot"></div>CONNECTED</div>
+  <div class="si" id="lastUpdate">UPDATED: --</div>
+  <div class="si">BBC · AL JAZEERA · ACLED</div>
+  <div class="si" id="articleCount">ARTICLES: 0</div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
