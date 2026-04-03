@@ -44,9 +44,10 @@ NUC.forEach(s=>{
 });
 
 // Supply routes
-[[32.4,53.7],[33.9,35.5],'#ef444450','Iran → Hezbollah'],
-[[32.4,53.7],[15.5,48.5],'#f9731650','Iran → Houthis'],
-[[32.4,53.7],[33.3,44.4],'#f59e0b50','Iran → PMU'],
+[
+  [[32.4,53.7],[33.9,35.5],'#ef444450','Iran → Hezbollah'],
+  [[32.4,53.7],[15.5,48.5],'#f9731650','Iran → Houthis'],
+  [[32.4,53.7],[33.3,44.4],'#f59e0b50','Iran → PMU'],
 ].forEach(([f,t,c,l])=>{ try{L.polyline([f,t],{color:c,weight:1.5,dashArray:'10,8'}).addTo(map).bindTooltip(l);}catch{} });
 
 // Zooms
