@@ -3,116 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MEM — Middle Eastern Monitor</title>
-<meta name="description" content="Real-time Middle East conflict intelligence. Live ACLED data, FIRMS fires, market impact.">
-<meta name="theme-color" content="#070a10">
+<title>MEM by NON — Middle Eastern Monitor</title>
+<meta name="theme-color" content="#060910">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- Full-screen map — THE hero -->
+<!-- Full-bleed map -->
 <div id="map"></div>
-<div class="map-vignette"></div>
+<div class="vignette"></div>
 
-<!-- Classification strip -->
-<div class="class-strip top">UNCLASSIFIED // FOR OFFICIAL USE ONLY</div>
-<div class="class-strip bottom">UNCLASSIFIED // FOR OFFICIAL USE ONLY</div>
+<!-- Classification -->
+<div class="clf top">UNCLASSIFIED // FOR OFFICIAL USE ONLY</div>
+<div class="clf bot">UNCLASSIFIED // FOR OFFICIAL USE ONLY</div>
 
-<!-- HUD: Top bar -->
-<div class="hud-top">
-  <div class="hud-brand">
-    <div class="pulse-dot"></div>
-    <div class="brand-stack">
-      <span class="brand-mem">MEM</span>
-      <span class="brand-full">MIDDLE EASTERN MONITOR</span>
+<!-- ═══ HEADER ═══ -->
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="dot-live"></div>
+    <div class="logo">
+      <span class="logo-mem">MEM</span>
+      <span class="logo-by">by NON</span>
     </div>
+    <div class="sep"></div>
+    <span class="tagline">MIDDLE EASTERN MONITOR</span>
   </div>
-  <div class="hud-center">
-    <div class="day-block">
-      <span class="day-num" id="dayCount">34</span>
-      <span class="day-unit">DAYS</span>
+  <div class="hdr-c">
+    <div class="big-day"><span class="big-n" id="dayN">34</span><span class="big-u">DAYS OF CONFLICT</span></div>
+    <div class="sep"></div>
+    <div class="esc-gauge">
+      <svg viewBox="0 0 48 48" class="esc-svg"><circle cx="24" cy="24" r="20" class="esc-bg"/><circle cx="24" cy="24" r="20" class="esc-fill" id="escArc"/></svg>
+      <span class="esc-n" id="escN">--</span>
     </div>
-    <div class="esc-block">
-      <div class="esc-ring" id="escRing">
-        <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" class="esc-bg"/><circle cx="24" cy="24" r="20" class="esc-arc" id="escArc"/></svg>
-        <span class="esc-val" id="escVal">--</span>
-      </div>
-      <span class="esc-label" id="escLabel">ESCALATION</span>
-    </div>
-    <div class="clock-block">
-      <span class="clock-time" id="clock">--:--</span>
-      <span class="clock-zone">UTC</span>
-    </div>
+    <div class="esc-meta"><span class="esc-lbl" id="escLbl">ESCALATION</span></div>
+    <div class="sep"></div>
+    <div class="clk"><span class="clk-t" id="clk">--:--</span><span class="clk-z">UTC</span></div>
   </div>
-  <div class="hud-stats">
-    <div class="stat-pill"><span class="stat-n" id="statEvents">--</span><span class="stat-l">EVENTS</span></div>
-    <div class="stat-pill red"><span class="stat-n" id="statFatal">--</span><span class="stat-l">KIA</span></div>
-    <div class="stat-pill orange"><span class="stat-n" id="statFires">--</span><span class="stat-l">FIRMS</span></div>
+  <div class="hdr-r">
+    <div class="pill"><span class="pill-n" id="sEv">--</span><span class="pill-l">EVENTS</span></div>
+    <div class="pill red"><span class="pill-n" id="sKia">--</span><span class="pill-l">KIA</span></div>
+    <div class="pill org"><span class="pill-n" id="sFi">--</span><span class="pill-l">FIRES</span></div>
+    <div class="pill cyn"><span class="pill-n" id="sSrc">12</span><span class="pill-l">SOURCES</span></div>
   </div>
+</header>
+
+<!-- ═══ BREAKING ═══ -->
+<div class="brk" id="brk" style="display:none">
+  <span class="brk-t">BREAKING</span>
+  <span class="brk-txt" id="brkTxt"></span>
+  <button class="brk-x" id="brkX">&times;</button>
 </div>
 
-<!-- HUD: Intel feed (left, floating) -->
-<div class="hud-left" id="hudLeft">
-  <div class="feed-header">
-    <span class="feed-title">INTEL FEED</span>
-    <div class="feed-tabs">
-      <button class="ftab active" data-tab="news">NEWS</button>
-      <button class="ftab" data-tab="acled">ACLED</button>
-    </div>
+<!-- ═══ LEFT: INTEL FEED ═══ -->
+<div class="col-l">
+  <div class="tabs">
+    <button class="tab on" data-t="news">INTEL</button>
+    <button class="tab" data-t="acled">ACLED</button>
+    <button class="tab" data-t="pred">PREDICT</button>
   </div>
-  <div class="feed-scroll" id="feedScroll">
-    <div class="feed-pane active" id="pane-news">
-      <div class="feed-loading"><div class="spin"></div>Connecting...</div>
-    </div>
-    <div class="feed-pane" id="pane-acled">
-      <div class="feed-loading"><div class="spin"></div>Loading ACLED...</div>
-    </div>
-  </div>
+  <div class="pane on" id="p-news"><div class="ld"><div class="sp"></div>Connecting feeds...</div></div>
+  <div class="pane" id="p-acled"><div class="ld"><div class="sp"></div>Loading ACLED...</div></div>
+  <div class="pane" id="p-pred"></div>
 </div>
 
-<!-- HUD: Right data strip -->
-<div class="hud-right" id="hudRight">
+<!-- ═══ RIGHT: DATA WALL ═══ -->
+<div class="col-r">
   <!-- Markets -->
-  <div class="r-section">
-    <div class="r-header">MARKETS</div>
-    <div class="r-body" id="rMarkets"><span class="r-loading">Loading...</span></div>
+  <div class="blk">
+    <div class="bh"><span class="bh-dot cy"></span>MARKET IMPACT</div>
+    <div class="bb" id="rMkt"><span class="ld-t">Loading...</span></div>
   </div>
   <!-- Nuclear -->
-  <div class="r-section">
-    <div class="r-header nuc">NUCLEAR</div>
-    <div class="r-body" id="rNuclear"></div>
+  <div class="blk">
+    <div class="bh"><span class="bh-dot pu"></span>NUCLEAR PROGRAM</div>
+    <div class="bb" id="rNuc"></div>
   </div>
   <!-- Fronts -->
-  <div class="r-section">
-    <div class="r-header fronts">ACTIVE FRONTS</div>
-    <div class="r-body" id="rFronts"></div>
+  <div class="blk">
+    <div class="bh"><span class="bh-dot rd"></span>ACTIVE FRONTS</div>
+    <div class="bb" id="rFr"></div>
+  </div>
+  <!-- Key Figures -->
+  <div class="blk">
+    <div class="bh"><span class="bh-dot am"></span>KEY FIGURES</div>
+    <div class="bb" id="rFig"></div>
+  </div>
+  <!-- Sanctions -->
+  <div class="blk">
+    <div class="bh"><span class="bh-dot vi"></span>SANCTIONS</div>
+    <div class="bb" id="rSanc"></div>
+  </div>
+  <!-- Sources -->
+  <div class="blk">
+    <div class="bh"><span class="bh-dot gr"></span>DATA SOURCES</div>
+    <div class="bb" id="rSrc">
+      <div class="sr"><span class="sd on"></span>ACLED Conflict Events</div>
+      <div class="sr"><span class="sd on"></span>NASA FIRMS / VIIRS</div>
+      <div class="sr"><span class="sd on"></span>BBC World RSS</div>
+      <div class="sr"><span class="sd on"></span>Al Jazeera RSS</div>
+      <div class="sr"><span class="sd on"></span>GPD Escalation Engine</div>
+      <div class="sr"><span class="sd on"></span>Yahoo / Binance Markets</div>
+      <div class="sr"><span class="sd on"></span>USGS Seismic</div>
+      <div class="sr"><span class="sd on"></span>GDELT Sentiment</div>
+      <div class="sr"><span class="sd on"></span>ReliefWeb / UNHCR</div>
+      <div class="sr"><span class="sd on"></span>EIA Oil Prices</div>
+      <div class="sr"><span class="sd wa"></span>Copernicus Sentinel-2</div>
+      <div class="sr"><span class="sd on"></span>Curated OSINT</div>
+    </div>
   </div>
 </div>
 
-<!-- HUD: Bottom ticker -->
-<div class="hud-ticker">
-  <span class="ticker-tag">LIVE</span>
-  <div class="ticker-scroll"><div class="ticker-track" id="tickerTrack"></div></div>
+<!-- ═══ BOTTOM: TICKER + MILESTONES ═══ -->
+<div class="bot-bar">
+  <div class="ticker">
+    <span class="tk-tag">LIVE</span>
+    <div class="tk-scroll"><div class="tk-track" id="tkTrack"></div></div>
+  </div>
 </div>
 
-<!-- HUD: Map controls -->
-<div class="hud-map-ctrl">
-  <button class="mc-btn" id="zME">ME</button>
-  <button class="mc-btn" id="zIR">IR</button>
-  <button class="mc-btn" id="zGZ">GZ</button>
-  <button class="mc-btn" id="zYE">YE</button>
-</div>
-
-<!-- Breaking alert -->
-<div class="breaking" id="breaking" style="display:none">
-  <span class="brk-tag">BREAKING</span>
-  <span class="brk-text" id="brkText"></span>
-  <button class="brk-x" id="brkClose">&times;</button>
+<!-- Map controls -->
+<div class="mc">
+  <button class="mb" id="zME">ME</button>
+  <button class="mb" id="zIR">IR</button>
+  <button class="mb" id="zGZ">GZ</button>
+  <button class="mb" id="zYE">YE</button>
+  <button class="mb" id="zHZ">HZ</button>
 </div>
 
 <script src="app.js"></script>
