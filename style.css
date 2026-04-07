@@ -37,6 +37,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--s);overflow:hidden;h
   display:flex;align-items:center;justify-content:space-between;padding:0 12px;
   background:var(--g);backdrop-filter:var(--blur);border-bottom:1px solid var(--gb);}
 .hdr-l,.hdr-r{display:flex;align-items:center;gap:8px;}
+.sponsor-logos{display:flex;align-items:center;gap:6px;padding-right:2px;}
 .hdr-c{display:flex;align-items:center;gap:14px;}
 .sep{width:1px;height:24px;background:var(--gb2);}
 .dot-live{width:7px;height:7px;border-radius:50%;background:var(--rd);
