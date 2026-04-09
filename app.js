@@ -3,7 +3,7 @@
 //  Dense war room · Live GPD data · 12 sources
 // ═══════════════════════════════════════════════
 
-const API = 'https://dngws-monitor.vercel.app/api';
+const API = 'https://globalmonitor.fly.dev/api';
 const WAR = new Date('2026-02-28T00:00:00Z');
 
 // ── CLOCK ──────────────────────────────────────
