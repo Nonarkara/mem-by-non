@@ -14,6 +14,9 @@
   --s: 'Inter', system-ui, sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:clamp(13px,1.15vw,24px);}
+@media(min-width:2560px){html{font-size:clamp(16px,1.1vw,28px);}}
+@media(min-width:3840px){html{font-size:clamp(20px,1vw,32px);}}
 body{background:var(--bg);color:var(--t1);font-family:var(--s);overflow:hidden;height:100vh;}
 
 /* ═══ MAP ═══ */

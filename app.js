@@ -18,6 +18,12 @@ setInterval(tick, 1000); tick();
 const map = L.map('map', { center:[29,48], zoom:5, zoomControl:false, attributionControl:false });
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:18 }).addTo(map);
 
+// Aerosol overlay (MODIS AOD via NASA GIBS — 2 days ago for processing lag)
+const aeroDate = new Date(Date.now() - 2*864e5).toISOString().slice(0,10);
+L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Combined_Value_Added_AOD/default/${aeroDate}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`, {
+  maxZoom: 6, opacity: 0.35, attribution: 'NASA GIBS / MODIS Aerosol'
+}).addTo(map);
+
 // Zones
 [
   {n:'Gaza',c:[[31.2,34.2],[31.6,34.2],[31.6,34.6],[31.2,34.6]],col:'#ef4444'},
