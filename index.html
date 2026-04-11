@@ -70,58 +70,50 @@
 <div class="col-l">
   <div class="tabs">
     <button class="tab on" data-t="news">INTEL</button>
-    <button class="tab" data-t="acled">ACLED</button>
+    <button class="tab" data-t="acled">CONFLICT</button>
+    <button class="tab" data-t="sat">SAT</button>
     <button class="tab" data-t="pred">PREDICT</button>
   </div>
   <div class="pane on" id="p-news"><div class="ld"><div class="sp"></div>Connecting feeds...</div></div>
-  <div class="pane" id="p-acled"><div class="ld"><div class="sp"></div>Loading ACLED...</div></div>
+  <div class="pane" id="p-acled"><div class="ld"><div class="sp"></div>Loading conflict map...</div></div>
+  <div class="pane" id="p-sat"><div class="ld"><div class="sp"></div>Loading satellite stack...</div></div>
   <div class="pane" id="p-pred"></div>
 </div>
 
 <!-- ═══ RIGHT: DATA WALL ═══ -->
 <div class="col-r">
+  <!-- Satellite -->
+  <div class="blk">
+    <div class="bh"><span class="bh-dot cy"></span>SATELLITE STACK</div>
+    <div class="bb" id="rSat"><span class="ld-t">Loading...</span></div>
+  </div>
   <!-- Markets -->
   <div class="blk">
     <div class="bh"><span class="bh-dot cy"></span>MARKET IMPACT</div>
     <div class="bb" id="rMkt"><span class="ld-t">Loading...</span></div>
-  </div>
-  <!-- Nuclear -->
-  <div class="blk">
-    <div class="bh"><span class="bh-dot pu"></span>NUCLEAR PROGRAM</div>
-    <div class="bb" id="rNuc"></div>
   </div>
   <!-- Fronts -->
   <div class="blk">
     <div class="bh"><span class="bh-dot rd"></span>ACTIVE FRONTS</div>
     <div class="bb" id="rFr"></div>
   </div>
-  <!-- Key Figures -->
   <div class="blk">
-    <div class="bh"><span class="bh-dot am"></span>KEY FIGURES</div>
-    <div class="bb" id="rFig"></div>
+    <div class="bh"><span class="bh-dot am"></span>CONFLICT HOTSPOTS</div>
+    <div class="bb" id="rHot"><span class="ld-t">Loading...</span></div>
   </div>
-  <!-- Sanctions -->
   <div class="blk">
-    <div class="bh"><span class="bh-dot vi"></span>SANCTIONS</div>
-    <div class="bb" id="rSanc"></div>
+    <div class="bh"><span class="bh-dot vi"></span>LIVE STRIKE LOG</div>
+    <div class="bb" id="rStrike"><span class="ld-t">Loading...</span></div>
+  </div>
+  <!-- Nuclear -->
+  <div class="blk">
+    <div class="bh"><span class="bh-dot pu"></span>NUCLEAR PROGRAM</div>
+    <div class="bb" id="rNuc"></div>
   </div>
   <!-- Sources -->
   <div class="blk">
     <div class="bh"><span class="bh-dot gr"></span>DATA SOURCES</div>
-    <div class="bb" id="rSrc">
-      <div class="sr"><span class="sd on"></span>ACLED Conflict Events</div>
-      <div class="sr"><span class="sd on"></span>NASA FIRMS / VIIRS</div>
-      <div class="sr"><span class="sd on"></span>BBC World RSS</div>
-      <div class="sr"><span class="sd on"></span>Al Jazeera RSS</div>
-      <div class="sr"><span class="sd on"></span>GPD Escalation Engine</div>
-      <div class="sr"><span class="sd on"></span>Yahoo / Binance Markets</div>
-      <div class="sr"><span class="sd on"></span>USGS Seismic</div>
-      <div class="sr"><span class="sd on"></span>GDELT Sentiment</div>
-      <div class="sr"><span class="sd on"></span>ReliefWeb / UNHCR</div>
-      <div class="sr"><span class="sd on"></span>EIA Oil Prices</div>
-      <div class="sr"><span class="sd wa"></span>Copernicus Sentinel-2</div>
-      <div class="sr"><span class="sd on"></span>Curated OSINT</div>
-    </div>
+    <div class="bb" id="rSrc"><span class="ld-t">Loading...</span></div>
   </div>
 </div>
 
@@ -131,6 +123,23 @@
     <span class="tk-tag">LIVE</span>
     <div class="tk-scroll"><div class="tk-track" id="tkTrack"></div></div>
   </div>
+</div>
+
+<!-- Map layer dock -->
+<div class="layer-dock">
+  <div class="layer-h">MAP STACK</div>
+  <div class="layer-base">
+    <button class="ly-base on" data-base="dark">DARK</button>
+    <button class="ly-base" data-base="sat">SAT</button>
+    <button class="ly-base" data-base="modis">NASA</button>
+  </div>
+  <div class="layer-ov">
+    <button class="ly-ov on" data-ov="aod">AOD</button>
+    <button class="ly-ov on" data-ov="acled">CONFLICT</button>
+    <button class="ly-ov on" data-ov="firms">THERMAL</button>
+    <button class="ly-ov on" data-ov="news">NEWS</button>
+  </div>
+  <div class="layer-meta" id="layerMeta">Analyst base loading...</div>
 </div>
 
 <!-- Map controls -->
