@@ -199,25 +199,33 @@ const map = L.map('map', {
   zoom: 5,
   zoomControl: false,
   attributionControl: false,
+  // §11.9 — regional-dashboard zoom floor. Leaflet defaults minZoom to 0, which
+  // lets the user zoom out until the world tiles side-by-side and the theater
+  // reads as broken. 3 shows the whole Middle East with no repetition.
+  minZoom: 3,
+  maxZoom: 18,
+  worldCopyJump: false,
 });
 
 const baseLayers = {
-  dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }),
-  sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18 }),
+  dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, minZoom: 3, noWrap: true }),
+  sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18, minZoom: 3, noWrap: true }),
   modis: L.tileLayer(
     `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${MODIS_DATE}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
-    { maxZoom: 9 }
+    { maxZoom: 9, minZoom: 3, noWrap: true }
   ),
 };
 
 const labelOverlay = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
   maxZoom: 18,
+  minZoom: 3,
+  noWrap: true,
   opacity: 0.72,
 });
 
 const aodLayer = L.tileLayer(
   `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Combined_Value_Added_AOD/default/${AOD_DATE}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,
-  { maxZoom: 6, opacity: 0.28 }
+  { maxZoom: 6, minZoom: 3, noWrap: true, opacity: 0.28 }
 );
 
 let activeBaseLayer = baseLayers.dark.addTo(map);
@@ -877,7 +885,13 @@ document.querySelectorAll('.tab').forEach((button) => {
     document.querySelectorAll('.tab').forEach((tab) => tab.classList.remove('on'));
     document.querySelectorAll('.pane').forEach((pane) => pane.classList.remove('on'));
     button.classList.add('on');
-    document.getElementById(`p-${button.dataset.t}`).classList.add('on');
+
+    // The DATA tab has no pane of its own — it surfaces the right-hand data wall,
+    // which CSS otherwise hides below 900px. Guarded so a tab without a matching
+    // pane can never throw.
+    const target = button.dataset.t;
+    document.querySelector('.col-r')?.classList.toggle('m-on', target === 'data');
+    document.getElementById(`p-${target}`)?.classList.add('on');
   };
 });
 

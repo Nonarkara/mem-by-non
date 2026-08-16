@@ -272,7 +272,37 @@ body{background:var(--bg);color:var(--t1);font-family:var(--s);overflow:hidden;h
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:1240px){.layer-dock{right:8px;}}
 @media(max-width:1100px){.col-l{width:280px;}.col-r{width:222px;}.layer-dock{width:198px;right:236px;}}
-@media(max-width:900px){.col-r{display:none;}.col-l{width:260px;}.hdr-r .pill:nth-child(4){display:none;}.layer-dock{right:8px;top:70px;}}
+/* The DATA tab only exists where the right rail has nowhere else to live. */
+.tab-mobile{display:none;}
+
+@media(max-width:900px){
+  .col-l{width:260px;}
+  .hdr-r .pill:nth-child(4){display:none;}
+  .layer-dock{right:8px;top:70px;}
+
+  /* §11.8 — the right-hand data wall (satellite stack, markets, active fronts,
+     hotspots, strike log) used to be display:none here with no way back to it,
+     so every phone and tablet lost it entirely. It now rides in as a bottom
+     sheet behind the DATA tab. */
+  .tab-mobile{display:block;}
+  .col-r{display:none;}
+  .col-r.m-on{
+    display:flex;
+    position:fixed;
+    left:0;right:0;bottom:42px;top:auto;
+    width:100%;
+    /* Stop 44px short of the left column's sheet so its tab row stays visible —
+       otherwise DATA covers the tabs and there is no way back to INTEL. */
+    height:calc(44vh - 52px);
+    padding:8px;
+    overflow-y:auto;
+    border-radius:12px 12px 0 0;
+    border-bottom:none;
+    z-index:120;
+  }
+  /* Apple HIG minimum — the 7px-padded desktop tabs are far too small to hit. */
+  .tab{min-height:44px;}
+}
 @media(max-width:600px){
   /* Bottom-sheet: show intelligence on mobile instead of hiding it */
   .col-l{width:100%;left:0;right:0;top:auto;bottom:42px;height:44vh;border-radius:12px 12px 0 0;border-bottom:none;}
