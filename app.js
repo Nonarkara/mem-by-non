@@ -1,4 +1,4 @@
-const API = 'https://globalmonitor.fly.dev/api';
+const API = 'https://global.nonarkara.org/api';
 const WAR = new Date('2026-02-28T00:00:00Z');
 const SATELLITE_LAG_DAYS = 2;
 const MODIS_DATE = isoDate(SATELLITE_LAG_DAYS);
