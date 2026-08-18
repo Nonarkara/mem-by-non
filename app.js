@@ -59,11 +59,11 @@ const LOC = {
 };
 
 const PRED = [
-  { q: 'Iran-US ceasefire holds through April?', y: 35 },
+  { q: 'Iran-US ceasefire holds?', y: 35 },
   { q: 'Hormuz reopens to commercial traffic?', y: 22 },
   { q: 'UNSC passes new sanctions resolution?', y: 68 },
   { q: 'Hezbollah escalates northern front?', y: 45 },
-  { q: 'Oil exceeds $120/bbl this month?', y: 71 },
+  { q: 'Oil exceeds $120/bbl?', y: 71 },
   { q: 'Iran withdraws from NPT?', y: 18 },
   { q: 'China brokers mediation framework?', y: 32 },
   { q: 'US deploys additional carrier group?', y: 55 },
@@ -642,6 +642,19 @@ async function loadAcled() {
   document.getElementById('sEv').textContent = STATE.acled.length;
   document.getElementById('sKia').textContent = fatalities.toLocaleString();
 
+  // Honest header: "LIVE" only when the feed genuinely isn't a curated
+  // fallback. curated_fallback is a real, current backend state (verified
+  // 2026-08-18), not a one-time historical glitch — it must never say LIVE.
+  const isCurated = String(STATE.acledMeta?.source || '').includes('fallback');
+  const strikeLabel = document.getElementById('strikeLabel');
+  const strikeDot = document.getElementById('strikeDot');
+  if (strikeLabel) {
+    strikeLabel.textContent = isCurated
+      ? `CURATED STRIKE LOG · since ${STATE.acledMeta?.since || '--'}`
+      : 'LIVE STRIKE LOG';
+  }
+  if (strikeDot) strikeDot.className = `bh-dot ${isCurated ? 'am' : 'vi'}`;
+
   renderHotspots();
   renderStrikeLog();
   renderSources();
@@ -691,7 +704,13 @@ async function loadFirms() {
     );
   });
 
-  document.getElementById('sFi').textContent = STATE.firms.length;
+  const firesPill = document.getElementById('sFi');
+  const isSample = String(STATE.firmsMeta?.source || '').includes('sample');
+  firesPill.textContent = STATE.firms.length;
+  firesPill.parentElement.title = isSample
+    ? 'Sample data — set FIRMS_MAP_KEY on the backend for live NASA detections'
+    : 'Live NASA FIRMS thermal detections';
+  firesPill.parentElement.classList.toggle('sample-data', isSample);
   renderSatelliteIntel();
   renderSources();
   renderLayerDock();
@@ -822,9 +841,31 @@ async function loadNews() {
   renderLayerDock();
 }
 
+const FRONT_KEYWORDS = {
+  'Iran Theater': ['iran'],
+  'Lebanon / Hezbollah': ['lebanon', 'hezbollah'],
+  'Red Sea / Houthi': ['red sea', 'houthi'],
+  'Strait of Hormuz': ['hormuz'],
+  'Iraq / PMU': ['iraq', 'pmu', 'militia'],
+  'Syria': ['syria'],
+  'Gaza': ['gaza'],
+};
+
+// Cross the already-loaded headline pool against each front's keywords —
+// used only when the API's own newsHits all come back 0 (a cold edge-cache
+// hit), so the panel never contradicts the Intel feed sitting beside it.
+function newsHitsFromHeadlines(frontName) {
+  const keywords = FRONT_KEYWORDS[frontName];
+  if (!keywords || !STATE.news?.length) return 0;
+  return STATE.news.filter((item) => {
+    const text = `${item.title || ''} ${item.source || ''}`.toLowerCase();
+    return keywords.some((kw) => text.includes(kw));
+  }).length;
+}
+
 async function loadFr() {
   const data = await f('/fronts');
-  const fronts = data?.fronts?.length ? data.fronts : [
+  let fronts = data?.fronts?.length ? data.fronts : [
     { name: 'Iran Theater', status: 'CRITICAL', score: 54, newsHits: 20, fireCount: 2 },
     { name: 'Lebanon / Hezbollah', status: 'ACTIVE', score: 42, newsHits: 12, fireCount: 2 },
     { name: 'Red Sea / Houthi', status: 'ACTIVE', score: 37, newsHits: 8, fireCount: 1 },
@@ -833,6 +874,10 @@ async function loadFr() {
     { name: 'Syria', status: 'STABLE', score: 14, newsHits: 2, fireCount: 2 },
     { name: 'Gaza', status: 'ACTIVE', score: 33, newsHits: 4, fireCount: 0 },
   ];
+
+  if (fronts.length && fronts.every((front) => !front.newsHits)) {
+    fronts = fronts.map((front) => ({ ...front, newsHits: newsHitsFromHeadlines(front.name) }));
+  }
 
   STATE.fronts = fronts;
   STATE.frontsUpdated = data?.updatedAt || new Date().toISOString();
@@ -878,7 +923,13 @@ document.getElementById('p-pred').innerHTML = PRED.map((prediction) => {
       </div>
     </div>
   `;
-}).join('');
+}).join('') + `
+  <div class="pr-note">
+    SCENARIO MODEL — analyst-set markers, not a live poll or computed odds.
+    Updated periodically by hand, not on a feed. Read as "what's plausible
+    right now," not as a forecast with a track record.
+  </div>
+`;
 
 document.querySelectorAll('.tab').forEach((button) => {
   button.onclick = () => {

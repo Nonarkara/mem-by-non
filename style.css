@@ -309,12 +309,26 @@ body{background:var(--bg);color:var(--t1);font-family:var(--s);overflow:hidden;h
   .big-u{display:none;}
   .tagline{display:none;}
   .esc-meta{display:none;}
-  .layer-dock{width:182px;top:64px;}
-  /* Header tightening on small screens */
-  .hdr-r .pill:nth-child(3),.hdr-r .pill:nth-child(4){display:none;}
+  /* upgrade-bar sits at top:62px and is ~24px tall — the dock must clear it,
+     not overlap it (was top:64px, a 22px collision). */
+  .layer-dock{width:182px;top:92px;}
+  /* Header tightening on small screens — 3 pills + escalation gauge + clock
+     was still too wide for 375px and clipped EVENTS at the screen edge. */
+  /* Even the single remaining pill (EVENTS) still overflowed past the
+     375px edge once logo + wordmark + day count + escalation gauge were
+     accounted for — the same counts are already visible in ACTIVE FRONTS
+     on the DATA sheet, so the row just hides rather than half-clipping. */
+  .hdr-r{display:none;}
+  /* The UTC clock sits in .hdr-l (not .hdr-r) after the escalation gauge —
+     it was the actual thing clipping at the right edge, not the pills. */
+  .clk,.sep{display:none;}
   .big-n{font-size:1.4rem;}
   /* Upgrade banner */
   .upgrade-bar{display:flex !important;}
+  /* Map controls (theater buttons) + About button float above the DATA
+     sheet instead of being covered by it. */
+  .mc{bottom:calc(44vh + 8px);z-index:130;}
+  #aboutBtn{bottom:calc(44vh + 8px) !important;}
 }
 /* Upgrade notice — hidden on desktop, shown via JS or on mobile */
 .upgrade-bar{
@@ -327,3 +341,18 @@ body{background:var(--bg);color:var(--t1);font-family:var(--s);overflow:hidden;h
 }
 .upgrade-bar a{color:var(--cy);text-decoration:none;font-weight:700;padding:2px 8px;border:1px solid rgba(6,182,212,0.3);border-radius:3px;}
 .upgrade-bar a:hover{background:rgba(6,182,212,0.1);}
+
+.pill.sample-data{border-style:dashed;opacity:0.82;}
+
+.pr-note{margin-top:10px;padding:8px 10px;border:1px dashed var(--gb2);border-radius:4px;
+  font:400 .48rem/1.5 'Inter',sans-serif;color:var(--t2);letter-spacing:.2px;}
+
+.papers-essay{padding:10px 12px 18px;font:400 .55rem/1.55 'Inter',sans-serif;color:var(--t2);}
+.papers-essay p{margin:0 0 10px;}
+.papers-essay h2{margin:16px 0 8px;font:700 .48rem/1 'JetBrains Mono',monospace;letter-spacing:1.5px;color:var(--t1);text-transform:uppercase;}
+.papers-essay .papers-meta{font:400 .45rem/1.5 'JetBrains Mono',monospace;color:var(--t3);}
+
+.layer-legend{margin-top:8px;padding-top:8px;border-top:1px solid var(--gb);display:flex;flex-direction:column;gap:4px;}
+.lg-row{display:flex;align-items:center;gap:6px;font:400 .44rem/1 'Inter',sans-serif;color:var(--t2);}
+.lg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.lg-dash{width:12px;height:0;border-top:1px dashed rgba(6,182,212,0.6);flex-shrink:0;}

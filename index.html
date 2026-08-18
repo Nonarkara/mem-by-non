@@ -26,7 +26,7 @@
 <!-- Upgrade notice — shown on mobile, linkable manually -->
 <div class="upgrade-bar" id="upgrade-bar">
   ↑ You're on the legacy monitor.
-  <a href="https://globalmonitor.fly.dev/" target="_blank">Open full version →</a>
+  <a href="https://globalmonitor.nonarkara.org/" target="_blank">Open full version →</a>
 </div>
 
 <!-- ═══ HEADER ═══ -->
@@ -80,6 +80,7 @@
     <button class="tab" data-t="acled">CONFLICT</button>
     <button class="tab" data-t="sat">SAT</button>
     <button class="tab" data-t="pred">PREDICT</button>
+    <button class="tab" data-t="papers">PAPERS</button>
     <!-- Mobile-only: the right-hand data wall has no room of its own below 900px,
          so it becomes a reachable tab instead of being hidden outright (§11.8). -->
     <button class="tab tab-mobile" data-t="data">DATA</button>
@@ -88,6 +89,21 @@
   <div class="pane" id="p-acled"><div class="ld"><div class="sp"></div>Loading conflict map...</div></div>
   <div class="pane" id="p-sat"><div class="ld"><div class="sp"></div>Loading satellite stack...</div></div>
   <div class="pane" id="p-pred"></div>
+  <div class="pane" id="p-papers">
+    <article class="papers-essay">
+      <p>My colleagues at the Ministry of Foreign Affairs have to decide, during a war like the one running right now, whether it's safe to send someone. That's the whole reason any of this exists. I wanted to give them something better to look at than a headline.</p>
+      <p>Earlier this year I didn't know what Python was. I didn't know what "AI" stood for, and I didn't know what an "AI agent" was — the term hadn't entered my head yet. I opened Google Antigravity because it was the thing in front of me, and I built a bot. Not a dashboard. A bot that could read text off a screen, which meant finding OCR software and running it quietly in the background of a MacBook M1 that was already six years old — and this was only around six months ago. That was the whole system. That's where this started.</p>
+      <p>From there I started pulling in open data and putting it on a map. GovInsider in Singapore is the reason I met the right people early — they put me in rooms with people who had actual ideas about what a system like this should do, not just how to make one look good. One of those people represented Japan's space agency, JAXA. That's where the satellite layer came from — I asked, and he had access to exactly the kind of imagery a war needs watched from above.</p>
+      <p>All of that happened this year. It felt like watching one universe end and a new one start in its place, all at once — that's the closest I can get to describing the speed of it. I went from not knowing the language to building hundreds of systems, fast enough that it still surprises the people who watch me do it.</p>
+      <p>I don't build the kind of database a system like this "should" have. I build with Google Sheets when Google Sheets will do, on purpose — so the system stays fixable by a person, not just by an engineer. I fix things fast, and I fix them the plain way, not the clever way, because the point was never to prove I could write clever code. It was to build something a human being who isn't me can still open up and understand.</p>
+      <p>That's why there are four of these, not one. Each has to earn its own identity the way a real club does — strong on its own terms, not a copy of the others. One is built wide, across all of Asia. One is built deep — the flagship, everything I know how to do in one place. One is built to step all the way back and hold the whole planet at once. One is built to be fast, the signal before anyone else finishes the headline. If they all did the same thing, I'd have built one system four times.</p>
+      <h2>This screen</h2>
+      <p>MEM is the fast one. Six data feeds. No filler.</p>
+      <p class="papers-meta">The other three: AsiaWatch at asia.nonarkara.org · GlobeWatch at globalmonitor.nonarkara.org · World Console at global.nonarkara.org</p>
+      <h2>What the map actually pulls</h2>
+      <p>The aerosol overlay on the three React maps is NASA MODIS Combined AOD — free, no key, two-day lag. MEM does not carry this layer. JAXA is why the satellite question got asked; Himawari, GCOM-C, and ALOS-2 radar are the real next step and they are not built yet.</p>
+    </article>
+  </div>
 </div>
 
 <!-- ═══ RIGHT: DATA WALL ═══ -->
@@ -112,7 +128,7 @@
     <div class="bb" id="rHot"><span class="ld-t">Loading...</span></div>
   </div>
   <div class="blk">
-    <div class="bh"><span class="bh-dot vi"></span>LIVE STRIKE LOG</div>
+    <div class="bh" id="strikeHead"><span class="bh-dot vi" id="strikeDot"></span><span id="strikeLabel">LIVE STRIKE LOG</span></div>
     <div class="bb" id="rStrike"><span class="ld-t">Loading...</span></div>
   </div>
   <!-- Nuclear -->
@@ -150,6 +166,13 @@
     <button class="ly-ov on" data-ov="news">NEWS</button>
   </div>
   <div class="layer-meta" id="layerMeta">Analyst base loading...</div>
+  <div class="layer-legend">
+    <div class="lg-row"><span class="lg-dot" style="background:#ef4444"></span>Strike / battle event</div>
+    <div class="lg-row"><span class="lg-dot" style="background:#06b6d4"></span>News-sourced marker</div>
+    <div class="lg-row"><span class="lg-dot" style="background:#f97316"></span>Thermal / fire detection</div>
+    <div class="lg-row"><span class="lg-dot" style="background:#22c55e;border-radius:2px"></span>Nuclear site — intact</div>
+    <div class="lg-row"><span class="lg-dash"></span>Reported proxy link</div>
+  </div>
 </div>
 
 <!-- Map controls -->
@@ -169,18 +192,18 @@
   <div style="width:540px;max-width:92vw;max-height:85vh;background:rgba(14,18,28,0.95);backdrop-filter:blur(24px);border-radius:16px;border:1px solid rgba(255,255,255,0.08);overflow:auto;padding:28px 32px;">
     <div style="text-align:center;margin-bottom:14px;">
       <div style="font:500 0.4rem/1 'JetBrains Mono',monospace;color:rgba(255,255,255,0.25);letter-spacing:2px;margin-bottom:8px;">FUNDED BY</div>
-      <img src="https://nonarkara.github.io/globalmonitor/pmua-logo.webp" alt="PMUA" style="height:36px;filter:brightness(1.8) contrast(0.9);opacity:0.9;">
+      <img src="https://nonarkara.github.io/globalmonitor/pmua-logo.webp" alt="PMUA" style="height:36px;background:#fff;padding:4px 10px;border-radius:5px;">
       <div style="font:400 0.5rem/1 'Inter',sans-serif;color:rgba(255,255,255,0.4);margin-top:4px;">Program Management Unit for Area Based Development</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px;">
-      <img src="https://nonarkara.github.io/globalmonitor/Logo%20depa-01.png" alt="depa" style="height:20px;filter:brightness(1.8) contrast(0.9);opacity:0.75;">
-      <img src="https://nonarkara.github.io/globalmonitor/mdes.png" alt="MDES" style="height:20px;filter:brightness(1.8) contrast(0.9);opacity:0.6;">
-      <img src="https://nonarkara.github.io/globalmonitor/smart-city-thailand-logo.svg" alt="Smart City Thailand" style="height:18px;filter:brightness(1.5);opacity:0.55;">
+      <img src="https://nonarkara.github.io/globalmonitor/Logo%20depa-01.png" alt="depa" style="height:20px;background:#fff;padding:3px 8px;border-radius:5px;">
+      <img src="https://nonarkara.github.io/globalmonitor/mdes.png" alt="MDES" style="height:20px;background:#fff;padding:3px 8px;border-radius:5px;">
+      <img src="https://nonarkara.github.io/globalmonitor/smart-city-thailand-logo.svg" alt="Smart City Thailand" style="height:18px;background:#fff;padding:3px 8px;border-radius:5px;">
     </div>
     <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:18px;">
       <span style="font:500 0.4rem/1 'JetBrains Mono',monospace;color:rgba(255,255,255,0.25);letter-spacing:2px;">EXECUTED BY</span>
-      <img src="https://nonarkara.github.io/globalmonitor/axiom-logo.png" alt="Axiom" style="height:20px;filter:brightness(1.8) contrast(0.9);opacity:0.8;">
-      <img src="https://nonarkara.github.io/globalmonitor/retl-logo.svg" alt="ReTL" style="height:18px;filter:brightness(1.8) invert(1);opacity:0.8;">
+      <img src="https://nonarkara.github.io/globalmonitor/axiom-logo.png" alt="Axiom" style="height:20px;background:#fff;padding:3px 8px;border-radius:5px;">
+      <img src="https://nonarkara.github.io/globalmonitor/retl-logo.svg" alt="ReTL" style="height:18px;background:#fff;padding:3px 8px;border-radius:5px;">
     </div>
     <h2 style="font:600 1rem/1.3 'Inter',sans-serif;color:rgba(255,255,255,0.9);margin-bottom:4px;">MEM by NON — Middle Eastern Monitor</h2>
     <p style="font:400 0.6rem/1 'JetBrains Mono',monospace;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:14px;">REAL-TIME GEOPOLITICAL INTELLIGENCE</p>
