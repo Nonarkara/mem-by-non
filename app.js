@@ -175,6 +175,13 @@ function geo(text) {
   return null;
 }
 
+// Whitelist, not blacklist: the event feed is LIVE only when the backend
+// names ACLED as its source. Anything else (curated_fallback, demo, empty)
+// is curated and must wear amber.
+function acledIsLive() {
+  return STATE.acledMeta?.source === 'acled';
+}
+
 async function f(path) {
   try {
     const response = await fetch(API + path);
@@ -366,8 +373,10 @@ function renderSources() {
     { label: 'NASA aerosol / dust', status: STATE.overlays.aod ? 'live' : 'delayed', detail: AOD_DATE },
     {
       label: 'Conflict event map',
-      status: STATE.acledMeta?.source?.includes('fallback') ? 'delayed' : STATE.acled.length ? 'live' : 'offline',
-      detail: STATE.acled.length ? `${STATE.acled.length} locations · since ${STATE.acledMeta?.since || '--'}` : 'Waiting for event feed',
+      status: acledIsLive() ? 'live' : STATE.acled.length ? 'sample' : 'offline',
+      detail: STATE.acled.length
+        ? `${STATE.acled.length} locations · ${acledIsLive() ? 'live' : 'curated'} · since ${STATE.acledMeta?.since || '--'}`
+        : 'Waiting for event feed',
     },
     {
       label: 'NASA FIRMS thermal hits',
@@ -387,7 +396,7 @@ function renderSources() {
     {
       label: 'Frontline model',
       status: STATE.fronts.length ? 'live' : 'offline',
-      detail: STATE.frontsUpdated ? `${STATE.fronts.length} theaters · ${ago(STATE.frontsUpdated)}` : 'Waiting for fronts',
+      detail: STATE.fronts.length ? `${STATE.fronts.length} theaters · ${ago(STATE.frontsUpdated)}` : 'No signal',
     },
   ];
 
@@ -557,14 +566,31 @@ async function loadEsc() {
   if (!data) return;
   STATE.escalation = data;
   STATE.sourceHealth = data.sourceHealth || {};
-  const pct = Math.min(data.score || 0, 100);
   const circ = 125.6;
-  const color = data.level === 'red' ? '#ef4444' : data.level === 'amber' ? '#f59e0b' : '#22c55e';
-  document.getElementById('escArc').style.strokeDashoffset = circ - (pct / 100) * circ;
-  document.getElementById('escArc').style.stroke = color;
-  document.getElementById('escN').textContent = Math.round(data.score || 0);
-  document.getElementById('escN').style.color = color;
-  document.getElementById('escLbl').textContent = data.label || 'ESCALATION';
+  const arc = document.getElementById('escArc');
+  const scoreEl = document.getElementById('escN');
+  const labelEl = document.getElementById('escLbl');
+
+  // score:null is the backend's honest "no data" — never coerce it to a
+  // green 0. Empty ring, neutral stroke, "--", and the backend's own label.
+  if (data.score == null || !Number.isFinite(Number(data.score))) {
+    arc.style.strokeDashoffset = circ;
+    arc.style.stroke = 'var(--t3)';
+    scoreEl.textContent = '--';
+    scoreEl.style.color = 'var(--t3)';
+    labelEl.textContent = data.label || 'NO DATA';
+    renderSources();
+    return;
+  }
+
+  const pct = clamp(Number(data.score), 0, 100);
+  // Green only when the backend says green; 'unknown' or anything else stays neutral.
+  const color = data.level === 'red' ? '#ef4444' : data.level === 'amber' ? '#f59e0b' : data.level === 'green' ? '#22c55e' : 'var(--t3)';
+  arc.style.strokeDashoffset = circ - (pct / 100) * circ;
+  arc.style.stroke = color;
+  scoreEl.textContent = Math.round(pct);
+  scoreEl.style.color = color;
+  labelEl.textContent = data.label || 'ESCALATION';
   renderSources();
 }
 
@@ -639,13 +665,20 @@ async function loadAcled() {
     pane.appendChild(card);
   });
 
-  document.getElementById('sEv').textContent = STATE.acled.length;
-  document.getElementById('sKia').textContent = fatalities.toLocaleString();
+  // Honest header: "LIVE" only when the backend names ACLED as the source.
+  // curated_fallback is a real, current backend state (verified 2026-08-18),
+  // not a one-time historical glitch — it, and anything else, must never say LIVE.
+  const isCurated = !acledIsLive();
+  const pillTitle = isCurated
+    ? `Curated fallback — not a live ACLED feed · since ${STATE.acledMeta?.since || '--'}`
+    : 'Live ACLED conflict events';
+  [['sEv', STATE.acled.length], ['sKia', fatalities.toLocaleString()]].forEach(([id, value]) => {
+    const pill = document.getElementById(id);
+    pill.textContent = value;
+    pill.parentElement.title = pillTitle;
+    pill.parentElement.classList.toggle('sample-data', isCurated);
+  });
 
-  // Honest header: "LIVE" only when the feed genuinely isn't a curated
-  // fallback. curated_fallback is a real, current backend state (verified
-  // 2026-08-18), not a one-time historical glitch — it must never say LIVE.
-  const isCurated = String(STATE.acledMeta?.source || '').includes('fallback');
   const strikeLabel = document.getElementById('strikeLabel');
   const strikeDot = document.getElementById('strikeDot');
   if (strikeLabel) {
@@ -757,17 +790,22 @@ function renderNewsMarkers() {
     unique.push(item);
   });
 
+  // Headline coords come from geo() — a keyword match against country /
+  // city centroids, not a geolocated event. Draw them as a large, faint,
+  // dashed halo so they never read as a pinpoint on the same map as ACLED.
   unique.slice(0, 14).forEach((item) => {
-    const icon = L.divIcon({
-      className: '',
-      html: '<div class="mk-h"></div>',
-      iconSize: [10, 10],
-      iconAnchor: [5, 5],
-    });
-    L.marker(item.coords, { icon }).addTo(groups.news).bindPopup(
+    L.circleMarker(item.coords, {
+      radius: 22,
+      color: '#06b6d4',
+      weight: 1,
+      fillColor: '#06b6d4',
+      fillOpacity: 0.05,
+      className: 'mk-inferred',
+    }).addTo(groups.news).bindPopup(
       `<div class="pp-t" style="color:#06b6d4">${escapeHtml(item.source || 'OSINT')}</div>
       <div class="pp-h">${escapeHtml(item.title)}</div>
-      <div class="pp-m">${escapeHtml(ago(item.pubDate))}</div>`
+      <div class="pp-m">${escapeHtml(ago(item.pubDate))}</div>
+      <div class="pp-m">location inferred from headline text</div>`
     );
   });
 }
@@ -865,24 +903,26 @@ function newsHitsFromHeadlines(frontName) {
 
 async function loadFr() {
   const data = await f('/fronts');
-  let fronts = data?.fronts?.length ? data.fronts : [
-    { name: 'Iran Theater', status: 'CRITICAL', score: 54, newsHits: 20, fireCount: 2 },
-    { name: 'Lebanon / Hezbollah', status: 'ACTIVE', score: 42, newsHits: 12, fireCount: 2 },
-    { name: 'Red Sea / Houthi', status: 'ACTIVE', score: 37, newsHits: 8, fireCount: 1 },
-    { name: 'Strait of Hormuz', status: 'CRITICAL', score: 61, newsHits: 15, fireCount: 1 },
-    { name: 'Iraq / PMU', status: 'ACTIVE', score: 29, newsHits: 6, fireCount: 1 },
-    { name: 'Syria', status: 'STABLE', score: 14, newsHits: 2, fireCount: 2 },
-    { name: 'Gaza', status: 'ACTIVE', score: 33, newsHits: 4, fireCount: 0 },
-  ];
+  // No invented theatres. The backend returns fronts:[] (reason:'no-signal')
+  // when its cache is cold — honour that as an empty state, and never stamp
+  // the local clock on a payload the backend did not date.
+  let fronts = Array.isArray(data?.fronts) ? data.fronts : [];
+  STATE.frontsUpdated = data?.updatedAt || null;
 
   if (fronts.length && fronts.every((front) => !front.newsHits)) {
     fronts = fronts.map((front) => ({ ...front, newsHits: newsHitsFromHeadlines(front.name) }));
   }
 
   STATE.fronts = fronts;
-  STATE.frontsUpdated = data?.updatedAt || new Date().toISOString();
 
-  document.getElementById('rFr').innerHTML = fronts.map((front) => {
+  const target = document.getElementById('rFr');
+  if (!fronts.length) {
+    target.innerHTML = '<span class="ld-t">No front status — feeds silent</span>';
+    renderSources();
+    return;
+  }
+
+  target.innerHTML = fronts.map((front) => {
     const status = String(front.status || '').toLowerCase();
     const cls = status === 'critical' ? 'c' : status === 'stable' ? 's' : 'a';
     return `
