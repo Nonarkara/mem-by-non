@@ -41,6 +41,11 @@ body{background:var(--bg);color:var(--t1);font-family:var(--s);overflow:hidden;h
   background:var(--g);backdrop-filter:var(--blur);border-bottom:1px solid var(--gb);}
 .hdr-l,.hdr-r{display:flex;align-items:center;gap:8px;}
 .sponsor-logos{display:flex;align-items:center;gap:6px;padding-right:2px;}
+.sponsor-chip{display:flex;align-items:center;gap:6px;background:#fff;padding:3px 8px;border-radius:5px;}
+/* Flat mark: transparent, mostly white squares — sits directly on the dark header. */
+.axiom-flat{height:32px;width:32px;flex:0 0 auto;display:block;object-fit:contain;}
+/* 3D app icon: only on a light chip. content-box keeps the 28px tile outside the padding. */
+.axiom-icon{height:28px;width:28px;display:block;object-fit:contain;background:#fff;padding:3px 8px;border-radius:5px;box-sizing:content-box;}
 .hdr-c{display:flex;align-items:center;gap:14px;}
 .sep{width:1px;height:24px;background:var(--gb2);}
 .dot-live{width:7px;height:7px;border-radius:50%;background:var(--rd);
