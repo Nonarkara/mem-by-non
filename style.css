@@ -376,6 +376,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--s);overflow:hidden;h
 .col-r.m-on :is(.bb,.bb div,.bb span,.bb a){font-size:12px;line-height:1.5;letter-spacing:0;}
 .col-r.m-on .bh{font:700 12px/1.4 var(--s);letter-spacing:.04em;}
 .col-r.m-on :is(.mr-p,.stat-n){font-size:16px;}
+/* One instrument at a time: map-only shortcuts must not cover open evidence. */
+body:has(.col-l.is-open) :is(.mc,#aboutBtn,.layer-dock){visibility:hidden;pointer-events:none;}
 .pane .nw-h{font-size:14px;line-height:1.4;}
 .pane :is(.nw-meta,.nw-s,.nw-time,.nw-tag){font-size:11px;line-height:1.4;}
 .layer-dock{right:8px;max-width:calc(100vw - 72px);background:var(--gs);border-radius:0;backdrop-filter:none;}
