@@ -205,7 +205,7 @@ const map = L.map('map', {
   center: [29, 48],
   zoom: 5,
   zoomControl: false,
-  attributionControl: false,
+  attributionControl: true,
   // §11.9 — regional-dashboard zoom floor. Leaflet defaults minZoom to 0, which
   // lets the user zoom out until the world tiles side-by-side and the theater
   // reads as broken. 3 shows the whole Middle East with no repetition.
@@ -215,7 +215,7 @@ const map = L.map('map', {
 });
 
 const baseLayers = {
-  dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18, minZoom: 3, noWrap: true }),
+  dark: L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18, maxNativeZoom: 16, minZoom: 3, noWrap: true, attribution: 'Esri, HERE, Garmin, OpenStreetMap contributors' }),
   sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18, minZoom: 3, noWrap: true }),
   modis: L.tileLayer(
     `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${MODIS_DATE}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
@@ -223,7 +223,7 @@ const baseLayers = {
   ),
 };
 
-const labelOverlay = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+const labelOverlay = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 18,
   minZoom: 3,
   noWrap: true,
@@ -973,17 +973,30 @@ document.getElementById('p-pred').innerHTML = PRED.map((prediction) => {
 
 document.querySelectorAll('.tab').forEach((button) => {
   button.onclick = () => {
+    const sheet = document.querySelector('.col-l');
+    const closing = sheet.classList.contains('is-open') && button.classList.contains('on');
+    sheet.classList.toggle('is-open', !closing);
     document.querySelectorAll('.tab').forEach((tab) => tab.classList.remove('on'));
     document.querySelectorAll('.pane').forEach((pane) => pane.classList.remove('on'));
-    button.classList.add('on');
+    document.querySelectorAll('.tab').forEach((tab) => tab.setAttribute('aria-expanded', 'false'));
+    if (!closing) button.classList.add('on');
+    button.setAttribute('aria-expanded', String(!closing));
 
     // The DATA tab has no pane of its own — it surfaces the right-hand data wall,
     // which CSS otherwise hides below 900px. Guarded so a tab without a matching
     // pane can never throw.
     const target = button.dataset.t;
-    document.querySelector('.col-r')?.classList.toggle('m-on', target === 'data');
-    document.getElementById(`p-${target}`)?.classList.add('on');
+    document.querySelector('.col-r')?.classList.toggle('m-on', !closing && target === 'data');
+    if (!closing) document.getElementById(`p-${target}`)?.classList.add('on');
   };
+  button.setAttribute('aria-expanded', 'false');
+  button.classList.remove('on');
+});
+document.querySelectorAll('.pane').forEach((pane) => pane.classList.remove('on'));
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  const active = document.querySelector('.tab.on');
+  if (active) { active.click(); active.focus(); }
 });
 
 renderLayerDock();
