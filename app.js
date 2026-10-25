@@ -21,6 +21,12 @@ const STATE = {
   marketsUpdated: '',
 };
 
+// Only explicit card/marker selections supply research context. Coordinates
+// inferred from headlines remain on the host map, never sent to other tools.
+function selectResearchContext(context) {
+  window.dispatchEvent(new CustomEvent('mem:research-context', { detail: context }));
+}
+
 const LOC = {
   gaza: [31.4, 34.3],
   'west bank': [31.9, 35.2],
@@ -236,6 +242,11 @@ const aodLayer = L.tileLayer(
 );
 
 let activeBaseLayer = baseLayers.dark.addTo(map);
+
+map.on('popupopen', event => {
+  const label = event.popup.getElement()?.querySelector('.pp-h')?.textContent;
+  selectResearchContext(label ? { label } : null);
+});
 
 const groups = {
   zones: L.layerGroup().addTo(map),
@@ -661,7 +672,10 @@ async function loadAcled() {
       <div class="cd-sub">${escapeHtml(item.notes)}</div>
       <div class="cd-ft"><span class="cd-kia">${escapeHtml(item.fatalities ? `${item.fatalities} KIA` : 'NO FATALITIES')}</span><span>${escapeHtml(item.actor || 'OSINT')}</span></div>
     `;
-    card.onclick = () => map.flyTo([item.lat, item.lon], 8, { duration: 0.8 });
+    card.onclick = () => {
+      selectResearchContext({ label: `${item.country}${item.region ? ' · ' + item.region : ''} · ${item.type}` });
+      map.flyTo([item.lat, item.lon], 8, { duration: 0.8 });
+    };
     pane.appendChild(card);
   });
 
@@ -823,6 +837,7 @@ function renderNewsPane(items) {
       <div class="cd-ft">${tags || '<span></span>'}</div>
     `;
     card.onclick = () => {
+      selectResearchContext({ label: item.title, publishedAt: item.pubDate });
       if (item.coords) {
         map.flyTo(item.coords, 7, { duration: 0.8 });
       } else if (item.link) {

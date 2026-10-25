@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="research-tools.css?v=sic-2026-10-25">
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "0da324da0e204440a172088c0fafc92c"}' ></script>
 </head>
 <body>
@@ -154,6 +155,7 @@
 <!-- Map layer dock -->
 <details class="layer-dock">
   <summary class="layer-h">Map layers</summary>
+  <button id="researchToolsOpen" type="button" class="research-context-open">Investigate place / event</button>
   <div class="layer-base">
     <button class="ly-base on" data-base="dark">DARK</button>
     <button class="ly-base" data-base="sat">SAT</button>
@@ -226,6 +228,7 @@
 </div>
 
 <script src="app.js"></script>
+<script type="module" src="research-entry.js?v=sic-2026-10-25"></script>
 
 <!-- Visitor Tracking -->
 <script>
