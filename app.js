@@ -242,10 +242,11 @@ const aodLayer = L.tileLayer(
 );
 
 let activeBaseLayer = baseLayers.dark.addTo(map);
+const researchPopups = new WeakMap();
 
 map.on('popupopen', event => {
   const label = event.popup.getElement()?.querySelector('.pp-h')?.textContent;
-  selectResearchContext(label ? { label } : null);
+  selectResearchContext(researchPopups.get(event.popup) || (label ? { label } : null));
 });
 
 const groups = {
@@ -657,12 +658,13 @@ async function loadAcled() {
       iconAnchor: [5, 5],
     });
 
-    L.marker([item.lat, item.lon], { icon }).addTo(groups.acled).bindPopup(
+    const marker = L.marker([item.lat, item.lon], { icon }).addTo(groups.acled).bindPopup(
       `<div class="pp-t" style="color:${tone.color}">${escapeHtml(item.type.toUpperCase())}</div>
       <div class="pp-h">${escapeHtml(`${item.country}${item.region ? ` · ${item.region}` : ''}`)}</div>
       <div class="pp-d">${escapeHtml(item.notes)}</div>
       <div class="pp-m">${escapeHtml(`${item.fatalities ? `${item.fatalities} KIA · ` : ''}${item.date || '--'}`)}</div>`
     );
+    researchPopups.set(marker.getPopup(), { label: `${item.country}${item.region ? ' · ' + item.region : ''} · ${item.type}`, eventAt: item.date });
 
     const card = document.createElement('div');
     card.className = `cd ${tone.tag === 'STRIKE' ? 'str' : tone.tag === 'BATTLE' ? 'bat' : 'vio'}`;
@@ -673,7 +675,7 @@ async function loadAcled() {
       <div class="cd-ft"><span class="cd-kia">${escapeHtml(item.fatalities ? `${item.fatalities} KIA` : 'NO FATALITIES')}</span><span>${escapeHtml(item.actor || 'OSINT')}</span></div>
     `;
     card.onclick = () => {
-      selectResearchContext({ label: `${item.country}${item.region ? ' · ' + item.region : ''} · ${item.type}` });
+      selectResearchContext({ label: `${item.country}${item.region ? ' · ' + item.region : ''} · ${item.type}`, eventAt: item.date });
       map.flyTo([item.lat, item.lon], 8, { duration: 0.8 });
     };
     pane.appendChild(card);
@@ -737,7 +739,7 @@ async function loadFirms() {
   STATE.firms.forEach((item) => {
     const radius = clamp(4 + item.frp / 70, 4, 12);
     const opacity = item.confidence === 'high' ? 0.86 : item.confidence === 'medium' ? 0.68 : 0.48;
-    L.circleMarker([item.lat, item.lon], {
+    const marker = L.circleMarker([item.lat, item.lon], {
       radius,
       color: '#fb923c',
       weight: 1.4,
@@ -749,6 +751,7 @@ async function loadFirms() {
       <div class="pp-d">${escapeHtml(`${Math.round(item.frp)} FRP · ${Math.round(item.brightness)}K · ${item.satellite}`)}</div>
       <div class="pp-m">${escapeHtml(`${fmtAcqDate(item.acqDate)} · ${fmtTimeCompact(item.acqTime)} · ${item.confidence.toUpperCase()}`)}</div>`
     );
+    researchPopups.set(marker.getPopup(), { label: 'Thermal detection', observedAt: item.acqDate ? `${item.acqDate} ${fmtTimeCompact(item.acqTime)} UTC` : null });
   });
 
   const firesPill = document.getElementById('sFi');
@@ -808,7 +811,7 @@ function renderNewsMarkers() {
   // city centroids, not a geolocated event. Draw them as a large, faint,
   // dashed halo so they never read as a pinpoint on the same map as ACLED.
   unique.slice(0, 14).forEach((item) => {
-    L.circleMarker(item.coords, {
+    const marker = L.circleMarker(item.coords, {
       radius: 22,
       color: '#06b6d4',
       weight: 1,
@@ -821,6 +824,7 @@ function renderNewsMarkers() {
       <div class="pp-m">${escapeHtml(ago(item.pubDate))}</div>
       <div class="pp-m">location inferred from headline text</div>`
     );
+    researchPopups.set(marker.getPopup(), { label: item.title, publishedAt: item.pubDate });
   });
 }
 
